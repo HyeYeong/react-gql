@@ -39,6 +39,9 @@ const GET_TEAM = gql`
     }
     `
 
+
+let refetchTeams
+
 function Teams() {
   const [contentId, setContentId] = useState(0)
   const [inputs, setInputs] = useState({
@@ -50,6 +53,9 @@ function Teams() {
     project: ''
   })
 
+  const { loading, error, data, refetch } = useQuery(GET_TEAMS);
+    refetchTeams = refetch
+
   function execDeleteTeam () {
     if (window.confirm('이 항목을 삭제하시겠습니까?')) {
       deleteTeam({variables: {id: contentId}})
@@ -57,9 +63,11 @@ function Teams() {
   }
   const [deleteTeam] = useMutation(
   DELETE_TEAM, { onCompleted: deleteTeamCompleted })
+
   function deleteTeamCompleted (data) {
     console.log(data.deleteTeam)
     alert(`${data.deleteTeam.id} 항목이 삭제되었습니다.`)
+    refetchTeams()
     setContentId(0)
   }
 
@@ -69,9 +77,6 @@ function Teams() {
       designer: '🎨',
       planner: '📝'
     }
-
-    const { loading, error, data, refetch } = useQuery(GET_TEAMS);
-    
 
     if (loading) return <p className="loading">Loading</p>
     if (error) return <p className="error">Error :(</p>
