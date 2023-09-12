@@ -2,30 +2,46 @@ import './components.css';
 import { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 
-const GET_PEOPLE = gql`
-  query GetPeople {
-  people {
-    id
+const Names = gql`
+  fragment names on People {
     first_name
     last_name
+  }
+`
+const HealthInfo = gql`
+  fragment healthInfo on People {
     sex
     blood_type
+  }
+`
+const WorkInfo = gql`
+  fragment workInfo on People {
+    serve_years
+    role
+    team
+    from
+  }
+`
+
+const GET_PEOPLE = gql`
+  query GetPeople {
+    people {
+      id
+      ...names
+      ...healthInfo
     }
   }
+  ${Names}
+  ${HealthInfo}
 `;
 
 const GET_PERSON = gql`
   query GetPerson($id: ID!) {
     person(id: $id) {
       id
-      first_name
-      last_name
-      sex
-      blood_type
-      serve_years
-      role
-      team
-      from
+      ...names
+      ...healthInfo
+      ...workInfo
       tools {
         __typename
         ... on Software {
@@ -38,6 +54,9 @@ const GET_PERSON = gql`
       }
     }
   }
+  ${Names}
+  ${HealthInfo}
+  ${WorkInfo}
 `;
 
 const DELETE_PERSON = gql`
@@ -51,31 +70,27 @@ const POST_PERSON = gql`
   mutation PostPerson($input: PostPersonInput!) {
     postPerson(input: $input) {
       id
-      first_name
-      last_name
-      sex
-      blood_type
-      serve_years
-      role
-      team
-      from
+      ...names
+      ...healthInfo
+      ...workInfo
     }
   }
+  ${Names}
+  ${HealthInfo}
+  ${WorkInfo}
 `
 
 const EDIT_PERSON = gql`
   mutation EditTeam($id: ID!, $input: PostPersonInput!) {
     editPerson(id: $id, input: $input) {
       id
-      first_name
-      last_name
-      sex
-      blood_type
-      serve_years
-      role
-      team
-      from
+      ...names
+      ...healthInfo
+      ...workInfo
     }
+    ${Names}
+    ${HealthInfo}
+    ${WorkInfo}
   }
 `
 
@@ -167,7 +182,7 @@ function People() {
       return bySex[sex][id % bySex[sex].length]
     }
 
-    if (loading) return <p className="loading">Loading...</p>
+    if (loading) return <p className="loading">Loading</p>
     if (error) return <p className="error">Error :(</p>
 
     return (
