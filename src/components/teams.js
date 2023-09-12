@@ -31,14 +31,41 @@ const GET_TEAM = gql`
   }
 `;
 
-    const DELETE_TEAM = gql`
-    mutation DeleteTeam($id: ID!) {
-        deleteTeam(id: $id) {
-        id
-        }
+const DELETE_TEAM = gql`
+mutation DeleteTeam($id: ID!) {
+    deleteTeam(id: $id) {
+    id
     }
-    `
+}
+`
 
+const EDIT_TEAM = gql`
+  mutation EditTeam($id: ID!, $input: PostTeamInput!) {
+    editTeam(id: $id, input: $input) {
+      id,
+      manager,
+      office,
+      extension_number,
+      mascot,
+      cleaning_duty,
+      project
+    }
+  }
+`
+
+const POST_TEAM = gql`
+  mutation PostTeam($input: PostTeamInput!) {
+    postTeam(input: $input) {
+      id
+      manager
+      office
+      extension_number
+      mascot
+      cleaning_duty
+      project
+    }
+  }
+`
 
 let refetchTeams
 
@@ -62,11 +89,43 @@ function Teams() {
     }
   }
   const [deleteTeam] = useMutation(
-  DELETE_TEAM, { onCompleted: deleteTeamCompleted })
+  DELETE_TEAM, { onCompleted: deleteTeamCompleted }
+  )
 
   function deleteTeamCompleted (data) {
     console.log(data.deleteTeam)
     alert(`${data.deleteTeam.id} 항목이 삭제되었습니다.`)
+    refetchTeams()
+    setContentId(0)
+  }
+  function execEditTeam () {
+    editTeam({
+      variables: {  
+        id: contentId,
+        input: inputs 
+      }   
+    })
+  }
+
+  const [editTeam] = useMutation(
+    EDIT_TEAM, { onCompleted: editTeamCompleted }) 
+  function editTeamCompleted (data) {
+    console.log(data.editTeam)
+    alert(`${data.editTeam.id} 항목이 수정되었습니다.`)
+    refetchTeams()
+  }
+
+  function execPostTeam () {
+    postTeam({
+      variables: { input: inputs }})
+  }
+
+  const [postTeam] = useMutation(
+    POST_TEAM, { onCompleted: postTeamCompleted }) 
+    
+  function postTeamCompleted (data) {
+    console.log(data.postTeam)
+    alert(`${data.postTeam.id} 항목이 생성되었습니다.`)
     refetchTeams()
     setContentId(0)
   }
@@ -185,9 +244,9 @@ function Teams() {
             </div>
             ) : (
             <div className="buttons">
-                <button onClick={() => {}}>Modify</button>
+                <button onClick={execEditTeam}>Modify</button>
                 <button onClick={execDeleteTeam}>Delete</button>
-                <button onClick={() => {setContentId(0)}}>New</button>
+                <button onClick={execPostTeam}>New</button>
             </div>
             )}
         </div>
